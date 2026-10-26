@@ -1,0 +1,27 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+
+# RAG: data generated or collected
+docs/*.pdf
+.cache/
+data/index/
+*.faiss
+*.sqlite
+*.db
+
+# Results of evaluation runs (the dataset of questions is on Git)
+evals/runs/
+
+# Editor and system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
