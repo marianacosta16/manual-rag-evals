@@ -1,0 +1,30 @@
+{
+  "name": "manual-rag-evals",
+  "version": "1.0.0",
+  "description": "Question answering over technical PDF manuals, with page-level citations and an evaluation suite that measures whether retrieval and answers are actually correct.",
+  "scripts": {
+    "test": "vitest run",
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marianacosta16/manual-rag-evals.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/marianacosta16/manual-rag-evals/issues"
+  },
+  "homepage": "https://github.com/marianacosta16/manual-rag-evals#readme",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "oxlint": "^1.89.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
