@@ -5,7 +5,8 @@
   "scripts": {
     "test": "vitest run",
     "lint": "oxlint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ingest": "tsx src/ingest/ingest.ts"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,8 @@
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "unpdf": "^1.9.1"
   }
 }
