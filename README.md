@@ -1,5 +1,9 @@
 # manual-rag-evals
 
+# manual-rag-evals
+
+[![CI](https://github.com/marianacosta16/manual-rag-evals/actions/workflows/ci.yml/badge.svg)](https://github.com/marianacosta16/manual-rag-evals/actions/workflows/ci.yml)
+
 Question answering over technical PDF manuals, with page-level citations and an
 evaluation suite that measures whether retrieval and answers are actually correct.
 
@@ -70,6 +74,16 @@ npm run typecheck
 Put the PDFs you want to query in `docs/` (see [docs/README.md](docs/README.md)).
 The ingestion, search and question-answering commands will be documented here as
 each part is ported (see the roadmap).
+
+## Continuous integration
+
+Every push to `main` and every pull request runs, on GitHub Actions:
+
+1. `npm run lint`: static checks with oxlint
+2. `npm run typecheck`: TypeScript type-check
+3. `npm test`: unit tests with Vitest
+
+CI does not run the evaluation (it needs an API key and costs money) and tests never download the embedding model, so CI runs offline.
 
 ## Project structure
 
