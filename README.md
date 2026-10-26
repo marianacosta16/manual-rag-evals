@@ -57,13 +57,30 @@ admits it instead of inventing one.
 
 ## Getting started
 
-*Will be filled in when the code is ported (see the roadmap).* The intended workflow:
+Prerequisites: Node.js 20 or later.
 
 ```bash
 npm install
-# put PDFs in docs/ (see docs/README.md)
-npm run ingest
+cp .env.example .env     # only needed once answer generation exists
 npm test
+npm run lint
+npm run typecheck
+```
+
+Put the PDFs you want to query in `docs/` (see [docs/README.md](docs/README.md)).
+The ingestion, search and question-answering commands will be documented here as
+each part is ported (see the roadmap).
+
+## Project structure
+
+```
+src/
+  ingest/      PDF reading and chunking
+  embed/       local embedding model
+  search/      vector store and similarity search
+  generate/    prompt and LLM call
+evals/         evaluation questions and runner
+docs/          source PDFs (git-ignored)
 ```
 
 ## Roadmap
