@@ -2,12 +2,11 @@
 
 [![CI](https://github.com/marianacosta16/manual-rag-evals/actions/workflows/ci.yml/badge.svg)](https://github.com/marianacosta16/manual-rag-evals/actions/workflows/ci.yml)
 
-Question answering over technical PDF manuals, with page-level citations and an
-evaluation suite that measures whether retrieval and answers are actually correct.
+Question answering over technical PDF manuals, with page-level citations and an evaluation suite that measures whether retrieval and answers are actually correct.
 
-> **Status: work in progress.** PDF ingestion and chunking are in place and tested.
-> Local embeddings and similarity search were prototyped in an earlier repository and
-> are being brought here next, followed by answer generation and the evaluation suite.
+> **Status: work in progress.** PDF ingestion, chunking and local embeddings are in
+> place and tested. Similarity search is next, followed by answer generation and the
+> evaluation suite.
 > See the [roadmap](#roadmap).
 
 ## What it does
@@ -17,7 +16,7 @@ Ask a question in natural language, get an answer grounded in the manuals, with 
 ## How it works
 
 1. **Ingest**: extract the text of each PDF page by page and split it into overlapping chunks. Each chunk keeps its source file and page number, so answers can cite where the information came from. Chunks never span two pages, which keeps the page number in a citation exact, at the cost of splitting an idea that continues on the next page.
-2. **Embed** *(planned)*: turn every chunk into a vector with a local model, so no API key is needed and no document leaves the machine.
+2. **Embed**: turn every chunk into a vector with a local model, so no API key is needed and no document leaves the machine. Ingestion itself never loads the model: `npm run ingest` only produces chunks, and `npm run embed` adds the vectors.
 3. **Retrieve** *(planned)*: embed the question with the **same** model and return the most similar chunks. Vectors from different models are not comparable, so one shared `embed()` serves both chunks and questions.
 4. **Generate** *(planned)*: send the question and the retrieved chunks to an LLM and return an answer that cites its sources.
 5. **Evaluate** *(planned)*: run a fixed set of questions and report retrieval quality, answer quality, cost and latency.
@@ -32,12 +31,29 @@ adjusted once the evaluation is in place.
 | Chunk size | 500 words | Small chunks lose surrounding context; large chunks mix several topics into one embedding and make search less precise |
 | Chunk overlap | 50 words | Keeps a sentence that crosses a chunk boundary whole in at least one chunk |
 | Minimum page size | 20 words | Covers, separators and near-blank pages cannot answer anything and only add noise |
+| Embedding model | `Xenova/all-MiniLM-L6-v2` | Small and fast, runs locally in Node with no API key. Mainly English, which matches the manuals used |
+| Embedding dimensions | 384 | Fixed by the model |
+| Embedding batch size | 32 chunks | Embedding every chunk in one call would hold all intermediate tensors in memory at once |
 
 They are named constants: `CHUNK_SIZE_WORDS` and `CHUNK_OVERLAP_WORDS` in
-`src/ingest/chunk.ts`, `MIN_PAGE_WORDS` in `src/ingest/ingest.ts`.
+`src/ingest/chunk.ts`, `MIN_PAGE_WORDS` in `src/ingest/ingest.ts`, and
+`EMBEDDING_MODEL` and `EMBEDDING_DIMENSIONS` in `src/embed/embed.ts`.
 
-Settings for embeddings and retrieval (model, dimensions, batch size, top-k) will be
-added here as those steps are ported.
+### Embeddings
+
+**The same model must embed both the chunks and the question.** Vectors produced by
+different models are not comparable, so mixing them would make search return
+essentially random results. That is why `embed()` is one shared function rather than
+two copies.
+
+Vectors are normalised, so cosine similarity is a plain dot product. The model weights
+(~87 MB) are downloaded from Hugging Face the first time they are needed and cached in
+`.cache/models/`, which is git-ignored. After that, embedding works offline.
+
+The model reads at most ~256 word pieces, so the tail of a 500-word chunk may not be
+represented in its vector. This is to be measured when tuning the chunk size.
+
+Settings for retrieval (top-k) will be added here when search is added.
 
 ## Evaluation
 
@@ -84,6 +100,20 @@ Total: 301 chunks, ~61210 words
 
 A PDF with no extractable text (for example a scanned one) is skipped with a warning.
 
+To also turn every chunk into a vector:
+
+```bash
+npm run embed            # ingest, then embed every chunk and log the time taken
+```
+
+The first run downloads the embedding model (~87 MB). With the same three manuals it
+ends with:
+
+```
+Embedding with Xenova/all-MiniLM-L6-v2:
+  301 vectors of 384 dimensions in 25.7s
+```
+
 To check the code:
 
 ```bash
@@ -92,7 +122,15 @@ npm run lint
 npm run typecheck
 ```
 
-Search and question-answering commands will be documented here as each part is ported
+`npm test` never loads the real embedding model: the unit tests replace it with a fake.
+The tests that use the real model are skipped by default; run them by hand with:
+
+```bash
+RUN_MODEL_TESTS=1 npx vitest run src/embed/embed.model.test.ts            # bash
+$env:RUN_MODEL_TESTS=1; npx vitest run src/embed/embed.model.test.ts      # PowerShell
+```
+
+Search and question-answering commands will be documented here as each part is added
 (see the roadmap).
 
 ## Continuous integration
@@ -103,7 +141,7 @@ Every push to `main` and every pull request runs, on GitHub Actions:
 2. `npm run typecheck`: TypeScript type-check
 3. `npm test`: unit tests with Vitest
 
-CI does not run the evaluation (it needs an API key and costs money) and tests never download the embedding model, so CI runs offline.
+CI does not run the evaluation (it needs an API key and costs money) and tests never download the embedding model (the tests that use it are opt-in), so CI runs offline.
 
 ## Project structure
 
@@ -121,7 +159,7 @@ docs/          source PDFs (git-ignored)
 
 - [x] Project setup and CI
 - [x] Ingestion and chunking, with tests
-- [ ] Local embeddings
+- [x] Local embeddings
 - [ ] Persisted vector store and top-k search
 - [ ] Retrieval evaluation (recall@k)
 - [ ] Answer generation with citations
