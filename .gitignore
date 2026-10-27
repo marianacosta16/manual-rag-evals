@@ -20,6 +20,9 @@ data/index/
 # Results of evaluation runs (the dataset of questions is on Git)
 evals/runs/
 
+# Claude Code: personal settings and permissions stay local
+.claude/settings.local.json
+
 # Editor and system
 .vscode/
 .idea/
